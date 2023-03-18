@@ -1,0 +1,87 @@
+version: "3.9"
+services:
+  authenticationService:
+    container_name: authentication_container1
+    image: authentication_image1
+    build: authentication/
+    ports:
+      - "8092:8092"
+    networks:
+      - mynetwork0
+    depends_on:
+      - mysqlDbService
+      - eurekaService
+      - apiGatewayService
+    restart: always
+
+  favMovieService:
+    container_name: fav_movie_service_container1
+    image: fav_movie_service_image1
+    build: FavMovieSer/
+    ports:
+      - "8888:8888"
+    networks:
+      - mynetwork0
+    depends_on:
+      - mongoDbService
+      - eurekaService
+      - apiGatewayService
+
+  mongoDbService:
+    container_name: mongo_container1
+    image: mongo:3.6
+    ports:
+      - "27017:27017"
+    networks:
+      - mynetwork0
+
+  mysqlDbService:
+    container_name: mysql_container1
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USERNAME: root
+      MYSQL_PASSWORD: root
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    ports:
+      - "3306:3306"
+    networks:
+      - mynetwork0
+
+  eurekaService:
+    container_name: eureka_service_container1
+    image: eureka_service_image1
+    ports:
+      - "8761:8761"
+    build: EurekaService/
+    networks:
+      - mynetwork0
+
+  apiGatewayService:
+    container_name: gateway_api_service_container1
+    image: gateway_api_service_image1
+    ports:
+      - "5555:5555"
+    build: GatewayAPI/
+    depends_on:
+      - eurekaService
+    networks:
+      - mynetwork0
+
+
+  emailAppService:
+    container_name: email_app_service_container1
+    image: email_app_service_image1
+    ports:
+      - "5672:5672"
+    build: emailAppService/
+    depends_on:
+      - eurekaService
+      - apiGatewayService
+      -  favMovieService
+    networks:
+      - mynetwork0
+
+networks:
+  mynetwork0:
+    driver: bridge
